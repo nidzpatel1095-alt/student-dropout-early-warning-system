@@ -1,0 +1,64 @@
+{
+    "final_model": "RandomForestClassifier",
+    "random_state": 42,
+    "dataset_shape": [
+        4424,
+        38
+    ],
+    "app_features": [
+        "Gender",
+        "Age at enrollment",
+        "Scholarship holder",
+        "Tuition fees up to date",
+        "Debtor",
+        "Displaced",
+        "Admission grade",
+        "Previous qualification (grade)",
+        "Curricular units 1st sem (enrolled)",
+        "Curricular units 1st sem (evaluations)",
+        "Curricular units 1st sem (approved)",
+        "Curricular units 1st sem (grade)",
+        "Curricular units 2nd sem (enrolled)",
+        "Curricular units 2nd sem (evaluations)",
+        "Curricular units 2nd sem (approved)",
+        "Curricular units 2nd sem (grade)"
+    ],
+    "rf_test_metrics": {
+        "Model": "Random Forest",
+        "Accuracy": 0.8768,
+        "Precision": 0.8136,
+        "Recall": 0.7993,
+        "F1_Score": 0.8064,
+        "ROC_AUC": 0.9219
+    },
+    "rf_cv_metrics": {
+        "Model": "Random Forest",
+        "CV_F1_Mean": 0.7941,
+        "CV_F1_Std": 0.0097,
+        "CV_Accuracy_Mean": 0.8714,
+        "CV_Accuracy_Std": 0.008
+    },
+    "risk_band_validation": [
+        {
+            "Risk_Band": "Low Risk",
+            "Prob_Range": "< 0.33",
+            "Total_Students": 528,
+            "Actual_Dropouts": 33,
+            "Dropout_Percentage": 6.25
+        },
+        {
+            "Risk_Band": "Medium Risk",
+            "Prob_Range": "0.33 to 0.66",
+            "Total_Students": 143,
+            "Actual_Dropouts": 58,
+            "Dropout_Percentage": 40.56
+        },
+        {
+            "Risk_Band": "High Risk",
+            "Prob_Range": ">= 0.66",
+            "Total_Students": 214,
+            "Actual_Dropouts": 193,
+            "Dropout_Percentage": 90.19
+        }
+    ]
+}

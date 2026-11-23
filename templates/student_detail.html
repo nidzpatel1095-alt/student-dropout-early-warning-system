@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Profile - {{ student.name }} - Early Warning System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark">
+            <i class="fa-solid fa-id-card me-2 text-primary"></i>Student Profile: {{ student.name }}
+        </h2>
+        <p class="text-muted mb-0">Roll Number: <strong>{{ student.roll_no }}</strong> | Record ID: #{{ student.id }}</p>
+    </div>
+    <div>
+        <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-outline-secondary me-2">
+            <i class="fa-solid fa-pen me-1"></i> Edit Profile
+        </a>
+        <a href="{{ url_for('students') }}" class="btn btn-outline-dark">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Directory
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Risk Assessment Card -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header {% if student.risk_level == 'High' %}bg-danger{% elif student.risk_level == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %} text-white py-3 text-center">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-shield-cat me-2"></i>Risk Assessment Score</h5>
+            </div>
+            <div class="card-body p-4 text-center">
+                <span class="text-muted fw-semibold">Predicted Dropout Probability</span>
+                <h1 class="display-3 fw-bold my-2 {% if student.risk_level == 'High' %}text-danger{% elif student.risk_level == 'Medium' %}text-warning{% else %}text-success{% endif %}">
+                    {{ "%.1f"|format(student.probability * 100) }}%
+                </h1>
+                
+                <div class="mb-4">
+                    {% if student.risk_level == 'High' %}
+                        <span class="badge badge-high fs-5 rounded-pill"><i class="fa-solid fa-circle-exclamation me-1"></i> HIGH RISK (>= 66%)</span>
+                    {% elif student.risk_level == 'Medium' %}
+                        <span class="badge badge-medium fs-5 rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> MEDIUM RISK (33-66%)</span>
+                    {% else %}
+                        <span class="badge badge-low fs-5 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> LOW RISK (< 33%)</span>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <!-- Key Risk Indicators -->
+                <div class="text-start mb-4">
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Flagged Risk Indicators</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for reason in top_reasons %}
+                            <li class="list-group-item bg-transparent px-0 text-secondary">
+                                <i class="fa-solid fa-caret-right me-2 text-primary"></i> {{ reason }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="text-start">
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-user-gear me-2 text-primary"></i>Recommended Support Actions</h6>
+                    <div class="list-group">
+                        {% for action in recommendations %}
+                            <div class="list-group-item border-0 bg-light mb-1 rounded small">
+                                <i class="fa-solid fa-check me-2 text-success"></i> {{ action }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Feature Breakdown Card -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check me-2 text-primary"></i>16 APP Features Breakdown</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Gender</small>
+                            <span class="fw-bold">{{ 'Male' if student.gender == 1 else 'Female' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Age at Enrollment</small>
+                            <span class="fw-bold">{{ student.age_at_enrollment|int }} years old</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Tuition Fees Status</small>
+                            <span class="fw-bold {% if student.tuition_fees_up_to_date == 1 %}text-success{% else %}text-danger{% endif %}">
+                                {{ 'Up to date' if student.tuition_fees_up_to_date == 1 else 'Unpaid / Overdue' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Debtor Status</small>
+                            <span class="fw-bold {% if student.debtor == 1 %}text-danger{% else %}text-success{% endif %}">
+                                {{ 'Yes (Has Debt)' if student.debtor == 1 else 'No Debt' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Scholarship Holder</small>
+                            <span class="fw-bold">{{ 'Yes' if student.scholarship_holder == 1 else 'No' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Displaced Student</small>
+                            <span class="fw-bold">{{ 'Yes (Living away)' if student.displaced == 1 else 'No (Living at home)' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Admission Grade</small>
+                            <span class="fw-bold">{{ student.admission_grade }} / 200</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted d-block">Previous Qualification Grade</small>
+                            <span class="fw-bold">{{ student.previous_qualification_grade }} / 200</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-primary mt-4 mb-3"><i class="fa-solid fa-book-open me-2"></i>Curricular Performance Summary</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle text-center small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Semester</th>
+                                <th>Enrolled</th>
+                                <th>Evaluations</th>
+                                <th>Approved</th>
+                                <th>Average Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold text-start">1st Semester</td>
+                                <td>{{ student.sem1_enrolled }}</td>
+                                <td>{{ student.sem1_evaluations }}</td>
+                                <td>
+                                    <span class="badge {% if student.sem1_approved < (student.sem1_enrolled / 2) %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ student.sem1_approved }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if student.sem1_grade < 10.0 %}text-danger{% else %}text-dark{% endif %}">
+                                        {{ student.sem1_grade }} / 20
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-start">2nd Semester</td>
+                                <td>{{ student.sem2_enrolled }}</td>
+                                <td>{{ student.sem2_evaluations }}</td>
+                                <td>
+                                    <span class="badge {% if student.sem2_approved < (student.sem2_enrolled / 2) %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ student.sem2_approved }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if student.sem2_grade < 10.0 %}text-danger{% else %}text-dark{% endif %}">
+                                        {{ student.sem2_grade }} / 20
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

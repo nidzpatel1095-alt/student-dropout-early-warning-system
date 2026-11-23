@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Student Dropout Early Warning System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white py-3">
+                <h4 class="fw-bold mb-0">
+                    <i class="fa-solid {% if mode == 'edit' %}fa-user-pen{% else %}fa-user-plus{% endif %} me-2 text-warning"></i>{{ title }}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-id-card me-2"></i>Student Identification</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ student.name if student else '' }}" required placeholder="e.g. John Doe">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="roll_no" class="form-label fw-semibold">Roll Number / ID *</label>
+                            <input type="text" class="form-control" id="roll_no" name="roll_no" value="{{ student.roll_no if student else '' }}" required placeholder="e.g. STU-2026-042">
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-users-viewfinder me-2"></i>Demographics & Background</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="gender" class="form-label fw-semibold">Gender</label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="1" {% if student and student.gender == 1 %}selected{% endif %}>Male (1)</option>
+                                <option value="0" {% if student and student.gender == 0 %}selected{% endif %}>Female (0)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="age_at_enrollment" class="form-label fw-semibold">Age at Enrollment</label>
+                            <input type="number" class="form-control" id="age_at_enrollment" name="age_at_enrollment" min="15" max="80" value="{{ student.age_at_enrollment if student else 20 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tuition_fees_up_to_date" class="form-label fw-semibold">Tuition Fees Paid?</label>
+                            <select class="form-select" id="tuition_fees_up_to_date" name="tuition_fees_up_to_date" required>
+                                <option value="1" {% if student and student.tuition_fees_up_to_date == 1 %}selected{% endif %}>Yes - Up to Date (1)</option>
+                                <option value="0" {% if student and student.tuition_fees_up_to_date == 0 %}selected{% endif %}>No - Unpaid (0)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="debtor" class="form-label fw-semibold">Has Debt?</label>
+                            <select class="form-select" id="debtor" name="debtor" required>
+                                <option value="0" {% if student and student.debtor == 0 %}selected{% endif %}>No (0)</option>
+                                <option value="1" {% if student and student.debtor == 1 %}selected{% endif %}>Yes (1)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="scholarship_holder" class="form-label fw-semibold">Scholarship Holder?</label>
+                            <select class="form-select" id="scholarship_holder" name="scholarship_holder" required>
+                                <option value="0" {% if student and student.scholarship_holder == 0 %}selected{% endif %}>No (0)</option>
+                                <option value="1" {% if student and student.scholarship_holder == 1 %}selected{% endif %}>Yes (1)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="displaced" class="form-label fw-semibold">Displaced Student?</label>
+                            <select class="form-select" id="displaced" name="displaced" required>
+                                <option value="1" {% if student and student.displaced == 1 %}selected{% endif %}>Yes - Living away from home (1)</option>
+                                <option value="0" {% if student and student.displaced == 0 %}selected{% endif %}>No - Living at home (0)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-graduation-cap me-2"></i>Prior Academic Record</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="admission_grade" class="form-label fw-semibold">Admission Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="admission_grade" name="admission_grade" min="0" max="200" value="{{ student.admission_grade if student else 130.0 }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="previous_qualification_grade" class="form-label fw-semibold">Previous Qualification Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="previous_qualification_grade" name="previous_qualification_grade" min="0" max="200" value="{{ student.previous_qualification_grade if student else 130.0 }}" required>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-book-open me-2"></i>1st Semester Performance</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="sem1_enrolled" class="form-label fw-semibold">Enrolled Units</label>
+                            <input type="number" class="form-control" id="sem1_enrolled" name="sem1_enrolled" min="0" max="30" value="{{ student.sem1_enrolled if student else 6 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem1_evaluations" class="form-label fw-semibold">Evaluations</label>
+                            <input type="number" class="form-control" id="sem1_evaluations" name="sem1_evaluations" min="0" max="30" value="{{ student.sem1_evaluations if student else 6 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem1_approved" class="form-label fw-semibold">Approved Units</label>
+                            <input type="number" class="form-control" id="sem1_approved" name="sem1_approved" min="0" max="30" value="{{ student.sem1_approved if student else 5 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem1_grade" class="form-label fw-semibold">Average Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="sem1_grade" name="sem1_grade" min="0" max="20" value="{{ student.sem1_grade if student else 12.0 }}" required>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-book-bookmark me-2"></i>2nd Semester Performance</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="sem2_enrolled" class="form-label fw-semibold">Enrolled Units</label>
+                            <input type="number" class="form-control" id="sem2_enrolled" name="sem2_enrolled" min="0" max="30" value="{{ student.sem2_enrolled if student else 6 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem2_evaluations" class="form-label fw-semibold">Evaluations</label>
+                            <input type="number" class="form-control" id="sem2_evaluations" name="sem2_evaluations" min="0" max="30" value="{{ student.sem2_evaluations if student else 6 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem2_approved" class="form-label fw-semibold">Approved Units</label>
+                            <input type="number" class="form-control" id="sem2_approved" name="sem2_approved" min="0" max="30" value="{{ student.sem2_approved if student else 5 }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sem2_grade" class="form-label fw-semibold">Average Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="sem2_grade" name="sem2_grade" min="0" max="20" value="{{ student.sem2_grade if student else 12.0 }}" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('students') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Student Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

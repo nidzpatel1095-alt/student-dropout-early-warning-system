@@ -1,0 +1,4 @@
+Risk_Band,Prob_Range,Total_Students,Actual_Dropouts,Dropout_Percentage
+Low Risk,< 0.33,528,33,6.25
+Medium Risk,0.33 to 0.66,143,58,40.56
+High Risk,>= 0.66,214,193,90.19

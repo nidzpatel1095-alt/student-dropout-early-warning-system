@@ -1,0 +1,5 @@
+Model,Accuracy,Weighted_F1
+Decision Tree,0.7311,0.7161
+Random Forest,0.7401,0.7428
+Gradient Boosting,0.7672,0.7618
+Logistic Regression,0.774,0.7635

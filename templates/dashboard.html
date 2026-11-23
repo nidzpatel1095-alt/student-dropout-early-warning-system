@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Student Dropout Early Warning System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-gauge-high me-2 text-primary"></i>System Dashboard</h2>
+        <p class="text-muted mb-0">Overview of student academic dropout risk distribution & priority action list.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('predict') }}" class="btn btn-primary me-2">
+            <i class="fa-solid fa-plus me-1"></i> Predict Single Student
+        </a>
+        <a href="{{ url_for('students') }}" class="btn btn-outline-dark">
+            <i class="fa-solid fa-list me-1"></i> View All Students
+        </a>
+    </div>
+</div>
+
+{% if total_students == 0 %}
+<div class="alert alert-warning p-4 shadow-sm text-center my-4">
+    <i class="fa-solid fa-database fa-3x mb-3 text-warning"></i>
+    <h4 class="fw-bold">No Student Records Found</h4>
+    <p class="mb-3 text-muted">The student database is currently empty. You can run sample data initialization to populate 30 real dataset records for evaluation.</p>
+    <a href="{{ url_for('load_samples_route') }}" class="btn btn-warning fw-bold px-4">
+        <i class="fa-solid fa-download me-2"></i> Load 30 Sample Student Records
+    </a>
+</div>
+{% else %}
+
+<!-- Stat Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm p-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-primary text-white rounded-circle p-3 me-3">
+                    <i class="fa-solid fa-users fa-xl"></i>
+                </div>
+                <div>
+                    <span class="text-muted small fw-semibold">Total Students</span>
+                    <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card-low shadow-sm p-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-success text-white rounded-circle p-3 me-3">
+                    <i class="fa-solid fa-shield-halved fa-xl"></i>
+                </div>
+                <div>
+                    <span class="text-muted small fw-semibold">Low Risk (< 33%)</span>
+                    <h3 class="fw-bold mb-0 text-success">{{ low_count }} <small class="fs-6 text-muted">({{ low_pct }}%)</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card-medium shadow-sm p-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-warning text-white rounded-circle p-3 me-3">
+                    <i class="fa-solid fa-triangle-exclamation fa-xl"></i>
+                </div>
+                <div>
+                    <span class="text-muted small fw-semibold">Medium Risk (33-66%)</span>
+                    <h3 class="fw-bold mb-0 text-warning">{{ medium_count }} <small class="fs-6 text-muted">({{ medium_pct }}%)</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card stat-card-high shadow-sm p-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-danger text-white rounded-circle p-3 me-3">
+                    <i class="fa-solid fa-circle-exclamation fa-xl"></i>
+                </div>
+                <div>
+                    <span class="text-muted small fw-semibold">High Risk (>= 66%)</span>
+                    <h3 class="fw-bold mb-0 text-danger">{{ high_count }} <small class="fs-6 text-muted">({{ high_pct }}%)</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Row: Chart & High Risk Table -->
+<div class="row g-4 mb-4">
+    <!-- Doughnut Chart Column -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Risk Distribution</h5>
+            </div>
+            <div class="card-body d-flex justify-content-center align-items-center" style="position: relative; min-height: 280px;">
+                <canvas id="riskDoughnutChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Highest Risk Students Column -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-fire me-2"></i>Top 10 Highest-Risk Students</h5>
+                <small class="text-muted">Requires Immediate Intervention</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Age</th>
+                                <th>Dropout Prob</th>
+                                <th>Risk Band</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in top_high_risk %}
+                            <tr>
+                                <td class="fw-bold text-secondary">{{ student.roll_no }}</td>
+                                <td class="fw-semibold">{{ student.name }}</td>
+                                <td>{{ student.age_at_enrollment|int }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2 fw-bold text-danger">{{ "%.1f"|format(student.probability * 100) }}%</span>
+                                        <div class="progress flex-grow-1" style="height: 6px;">
+                                            <div class="progress-bar bg-danger" style="width: {{ student.probability * 100 }}%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if student.risk_level == 'High' %}
+                                        <span class="badge badge-high rounded-pill"><i class="fa-solid fa-circle-exclamation me-1"></i> High</span>
+                                    {% elif student.risk_level == 'Medium' %}
+                                        <span class="badge badge-medium rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> Medium</span>
+                                    {% else %}
+                                        <span class="badge badge-low rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> Low</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('view_student', student_id=student.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-eye me-1"></i> View Profile
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No high-risk students found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if total_students > 0 %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('riskDoughnutChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Low Risk (<33%)', 'Medium Risk (33-66%)', 'High Risk (>=66%)'],
+                datasets: [{
+                    data: [{{ low_count }}, {{ medium_count }}, {{ high_count }}],
+                    backgroundColor: ['#16a34a', '#d97706', '#dc2626'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 12, weight: 'bold' },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let total = {{ total_students }};
+                                let percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} students (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

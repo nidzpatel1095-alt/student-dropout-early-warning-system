@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Predict Student Risk - Student Dropout Early Warning System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Prediction Form -->
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-calculator me-2 text-warning"></i>Student Risk Predictor</h5>
+                <small class="text-white-50">Enter student details across the 16 key academic and demographic indicators.</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('predict') }}">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-id-card me-2"></i>1. Student Identification & Demographics</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="student_name" class="form-label fw-semibold">Student Name (Optional)</label>
+                            <input type="text" class="form-control" id="student_name" name="student_name" value="{{ form_data.get('student_name', '') }}" placeholder="e.g. Alex Johnson">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="roll_no" class="form-label fw-semibold">Roll No / ID (Optional)</label>
+                            <input type="text" class="form-control" id="roll_no" name="roll_no" value="{{ form_data.get('roll_no', '') }}" placeholder="e.g. STU-2026-001">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Gender" class="form-label fw-semibold">Gender</label>
+                            <select class="form-select" id="Gender" name="Gender" required>
+                                <option value="1" {% if form_data.get('Gender', '1') == '1' %}selected{% endif %}>Male (1)</option>
+                                <option value="0" {% if form_data.get('Gender') == '0' %}selected{% endif %}>Female (0)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Age at enrollment" class="form-label fw-semibold">Age at Enrollment</label>
+                            <input type="number" class="form-control" id="Age at enrollment" name="Age at enrollment" min="15" max="80" value="{{ form_data.get('Age at enrollment', '20') }}" required>
+                            <div class="form-text">Student age when entering university (15-80 years).</div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-coins me-2"></i>2. Financial & Social Background</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="Tuition fees up to date" class="form-label fw-semibold">Tuition Fees Up To Date?</label>
+                            <select class="form-select" id="Tuition fees up to date" name="Tuition fees up to date" required>
+                                <option value="1" {% if form_data.get('Tuition fees up to date', '1') == '1' %}selected{% endif %}>Yes - Up to Date (1)</option>
+                                <option value="0" {% if form_data.get('Tuition fees up to date') == '0' %}selected{% endif %}>No - Unpaid / Overdue (0)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Debtor" class="form-label fw-semibold">Student Has Outstanding Debt?</label>
+                            <select class="form-select" id="Debtor" name="Debtor" required>
+                                <option value="0" {% if form_data.get('Debtor', '0') == '0' %}selected{% endif %}>No - No Debt (0)</option>
+                                <option value="1" {% if form_data.get('Debtor') == '1' %}selected{% endif %}>Yes - Has Debt (1)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Scholarship holder" class="form-label fw-semibold">Scholarship Holder?</label>
+                            <select class="form-select" id="Scholarship holder" name="Scholarship holder" required>
+                                <option value="0" {% if form_data.get('Scholarship holder', '0') == '0' %}selected{% endif %}>No (0)</option>
+                                <option value="1" {% if form_data.get('Scholarship holder') == '1' %}selected{% endif %}>Yes - Holds Scholarship (1)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Displaced" class="form-label fw-semibold">Displaced Student?</label>
+                            <select class="form-select" id="Displaced" name="Displaced" required>
+                                <option value="1" {% if form_data.get('Displaced', '1') == '1' %}selected{% endif %}>Yes - Living away from home (1)</option>
+                                <option value="0" {% if form_data.get('Displaced') == '0' %}selected{% endif %}>No - Living at home (0)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-graduation-cap me-2"></i>3. Academic Qualification Grades</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="Admission grade" class="form-label fw-semibold">Admission Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="Admission grade" name="Admission grade" min="0" max="200" value="{{ form_data.get('Admission grade', '130.0') }}" required>
+                            <div class="form-text">Entrance exam score (0.0 to 200.0).</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="Previous qualification (grade)" class="form-label fw-semibold">Previous Qualification Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="Previous qualification (grade)" name="Previous qualification (grade)" min="0" max="200" value="{{ form_data.get('Previous qualification (grade)', '130.0') }}" required>
+                            <div class="form-text">High school grade (0.0 to 200.0).</div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-book-open me-2"></i>4. 1st Semester Performance</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="Curricular units 1st sem (enrolled)" class="form-label fw-semibold">Enrolled</label>
+                            <input type="number" class="form-control" id="Curricular units 1st sem (enrolled)" name="Curricular units 1st sem (enrolled)" min="0" max="30" value="{{ form_data.get('Curricular units 1st sem (enrolled)', '6') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 1st sem (evaluations)" class="form-label fw-semibold">Evaluations</label>
+                            <input type="number" class="form-control" id="Curricular units 1st sem (evaluations)" name="Curricular units 1st sem (evaluations)" min="0" max="30" value="{{ form_data.get('Curricular units 1st sem (evaluations)', '6') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 1st sem (approved)" class="form-label fw-semibold">Approved</label>
+                            <input type="number" class="form-control" id="Curricular units 1st sem (approved)" name="Curricular units 1st sem (approved)" min="0" max="30" value="{{ form_data.get('Curricular units 1st sem (approved)', '5') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 1st sem (grade)" class="form-label fw-semibold">Avg Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="Curricular units 1st sem (grade)" name="Curricular units 1st sem (grade)" min="0" max="20" value="{{ form_data.get('Curricular units 1st sem (grade)', '12.0') }}" required>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-book-bookmark me-2"></i>5. 2nd Semester Performance</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="Curricular units 2nd sem (enrolled)" class="form-label fw-semibold">Enrolled</label>
+                            <input type="number" class="form-control" id="Curricular units 2nd sem (enrolled)" name="Curricular units 2nd sem (enrolled)" min="0" max="30" value="{{ form_data.get('Curricular units 2nd sem (enrolled)', '6') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 2nd sem (evaluations)" class="form-label fw-semibold">Evaluations</label>
+                            <input type="number" class="form-control" id="Curricular units 2nd sem (evaluations)" name="Curricular units 2nd sem (evaluations)" min="0" max="30" value="{{ form_data.get('Curricular units 2nd sem (evaluations)', '6') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 2nd sem (approved)" class="form-label fw-semibold">Approved</label>
+                            <input type="number" class="form-control" id="Curricular units 2nd sem (approved)" name="Curricular units 2nd sem (approved)" min="0" max="30" value="{{ form_data.get('Curricular units 2nd sem (approved)', '5') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Curricular units 2nd sem (grade)" class="form-label fw-semibold">Avg Grade</label>
+                            <input type="number" step="0.1" class="form-control" id="Curricular units 2nd sem (grade)" name="Curricular units 2nd sem (grade)" min="0" max="20" value="{{ form_data.get('Curricular units 2nd sem (grade)', '12.0') }}" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Calculate Risk Prediction
+                    </button>
+                    <div class="form-text text-center mt-3">
+                        Values far outside the typical range of the training data (for example admission grade below 95 or above 190, age below 17) may give less reliable predictions.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Prediction Result Card -->
+    <div class="col-lg-5">
+        {% if prediction_result %}
+        <div class="card shadow border-0 sticky-top" style="top: 20px;">
+            <div class="card-header {% if prediction_result.risk_level == 'High' %}bg-danger{% elif prediction_result.risk_level == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %} text-white py-3">
+                <h5 class="fw-bold mb-0 text-center">
+                    <i class="fa-solid fa-chart-bar me-2"></i>Prediction Result Card
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <!-- Probability Gauge Display -->
+                <div class="text-center mb-4">
+                    <span class="text-muted fw-semibold">Predicted Dropout Probability</span>
+                    <h1 class="display-3 fw-bold my-2 {% if prediction_result.risk_level == 'High' %}text-danger{% elif prediction_result.risk_level == 'Medium' %}text-warning{% else %}text-success{% endif %}">
+                        {{ "%.1f"|format(prediction_result.dropout_prob * 100) }}%
+                    </h1>
+                    
+                    <div>
+                        {% if prediction_result.risk_level == 'High' %}
+                            <span class="badge badge-high fs-5 rounded-pill"><i class="fa-solid fa-circle-exclamation me-1"></i> HIGH RISK (>= 66%)</span>
+                        {% elif prediction_result.risk_level == 'Medium' %}
+                            <span class="badge badge-medium fs-5 rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i> MEDIUM RISK (33-66%)</span>
+                        {% else %}
+                            <span class="badge badge-low fs-5 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> LOW RISK (< 33%)</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Key Risk Indicators -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Key Risk Indicators</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for reason in prediction_result.top_reasons %}
+                            <li class="list-group-item bg-transparent px-0 text-secondary">
+                                <i class="fa-solid fa-caret-right me-2 text-primary"></i> {{ reason }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Recommended Actions -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-user-gear me-2 text-primary"></i>Recommended Advisor Actions</h6>
+                    <div class="list-group">
+                        {% for action in prediction_result.recommendations %}
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-1 rounded">
+                                <i class="fa-solid fa-check me-2 text-success"></i> {{ action }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Option to Save Student to Database -->
+                <form method="POST" action="{{ url_for('save_student') }}">
+                    <!-- Hidden feature fields -->
+                    {% for key, val in form_data.items() %}
+                        <input type="hidden" name="{{ key }}" value="{{ val }}">
+                    {% endfor %}
+                    <input type="hidden" name="probability" value="{{ prediction_result.dropout_prob }}">
+                    <input type="hidden" name="risk_level" value="{{ prediction_result.risk_level }}">
+
+                    <div class="card border-primary p-3 bg-light mb-3">
+                        <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-floppy-disk me-1"></i>Save Student to Database</h6>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" name="save_name" placeholder="Student Full Name *" value="{{ form_data.get('student_name', '') }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" name="save_roll_no" placeholder="Roll No / ID Number *" value="{{ form_data.get('roll_no', '') }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">
+                            <i class="fa-solid fa-plus me-1"></i> Save to Database
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="card shadow-sm border-0 text-center p-5 text-muted">
+            <i class="fa-solid fa-chart-line fa-4x mb-3 text-secondary opacity-50"></i>
+            <h5 class="fw-bold">No Prediction Calculated Yet</h5>
+            <p class="small mb-0">Fill out the student feature parameters on the left and click <strong>"Calculate Risk Prediction"</strong> to view the risk score, indicators, and recommendations.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
